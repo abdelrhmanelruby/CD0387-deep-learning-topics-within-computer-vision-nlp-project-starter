@@ -20,14 +20,15 @@ What kind of model did you choose for this experiment and why? Give an overview 
 Here's a screen shot of some completed training jobs:
 ![image](https://user-images.githubusercontent.com/107134115/213970240-86da24c0-b160-47af-9a17-88d277883173.png)
 
-The following is a list of hyperparameters that have been tuned:
-"lr": ContinuousParameter(0.001, 0.1),
-"batch-size": CategoricalParameter([32, 64, 128, 256]),
-"epochs": IntegerParameter(2, 5)
 
 Here's a screen shot of Logs metrics :
 ![image](https://user-images.githubusercontent.com/107134115/213970682-57dc328c-9981-4316-b389-57a4bde1c60a.png)
 ![image](https://user-images.githubusercontent.com/107134115/213970704-25447ae4-188e-40e7-8888-ffc48de375c4.png)
+
+The following is a list of hyperparameters that have been tuned:
+"lr": ContinuousParameter(0.001, 0.1),
+"batch-size": CategoricalParameter([32, 64, 128, 256]),
+"epochs": IntegerParameter(2, 5)
 
 The best best hyperparameters:
 'batch-size': '"64"',
@@ -48,21 +49,35 @@ rules = [
 ### Results
 ![image](https://user-images.githubusercontent.com/107134115/214050037-cf64097b-a741-4b16-8ee8-db9c86a00d8b.png)
 
+As we can see, this model has no flaws.
 
 
 
 ## Model Deployment
 To deploy the model, an extra file called model.py was required
-This script loads the model and transforms the input.
+To create the endpoint :
 ```python
-pytorch_model = PyTorchModel(model_data=estimator.model_data, 
+py_modell = PyTorchModel(model_data=estimator.model_data, 
                              role=role, 
                              entry_point='model.py', 
                              py_version='py36',
                              framework_version='1.8')
 
 
-predictor = pytorch_model.deploy(initial_instance_count=1, instance_type='ml.m5.xlarge')
+predictor = py_modell.deploy(initial_instance_count=1, instance_type='ml.m5.xlarge')
+```
+
+This script loads the model and transforms the input.
+
+```python
+def pred_dog_preed(img):    
+    buf = io.BytesIO()
+    Image.open(img).save(buf, format="JPEG")
+    response = predictor.predict(buf.getvalue())
+    
+    folders = list(listdir("./dogImages/train"))
+    folders.sort()
+    return folders[list(response[0]).index(max(response[0]))]
 ```
 Screenshot of the endpoint in operation
 ![Screenshot_20230123_072357](https://user-images.githubusercontent.com/107134115/214050510-50f04561-6242-4b8e-93f8-500a00183d33.png)
