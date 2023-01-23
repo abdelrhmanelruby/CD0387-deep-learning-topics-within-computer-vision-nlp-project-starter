@@ -35,18 +35,35 @@ The best best hyperparameters:
 'lr': '0.00716803840042681'
 
 ## Debugging and Profiling
-**TODO**: Give an overview of how you performed model debugging and profiling in Sagemaker
+Debugging and profiling were carried out in accordance with the instructions provided throughout the course :
+```python
+rules = [
+    ProfilerRule.sagemaker(rule_configs.LowGPUUtilization()),
+    ProfilerRule.sagemaker(rule_configs.ProfilerReport()),
+    Rule.sagemaker(rule_configs.vanishing_gradient()),
+    Rule.sagemaker(rule_configs.overfit()),
+]
+```
 
 ### Results
-**TODO**: What are the results/insights did you get by profiling/debugging your model?
+![image](https://user-images.githubusercontent.com/107134115/214050037-cf64097b-a741-4b16-8ee8-db9c86a00d8b.png)
 
-**TODO** Remember to provide the profiler html/pdf file in your submission.
+
 
 
 ## Model Deployment
-**TODO**: Give an overview of the deployed model and instructions on how to query the endpoint with a sample input.
+To deploy the model, an extra file called model.py was required
+This script loads the model and transforms the input.
+```python
+pytorch_model = PyTorchModel(model_data=estimator.model_data, 
+                             role=role, 
+                             entry_point='model.py', 
+                             py_version='py36',
+                             framework_version='1.8')
 
-**TODO** Remember to provide a screenshot of the deployed active endpoint in Sagemaker.
 
-## Standout Suggestions
-**TODO (Optional):** This is where you can provide information about any standout suggestions that you have attempted.
+predictor = pytorch_model.deploy(initial_instance_count=1, instance_type='ml.m5.xlarge')
+```
+Screenshot of the endpoint in operation
+![Screenshot_20230123_072357](https://user-images.githubusercontent.com/107134115/214050510-50f04561-6242-4b8e-93f8-500a00183d33.png)
+
